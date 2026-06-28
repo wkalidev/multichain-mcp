@@ -106,7 +106,7 @@ async function sendWelcomeEmail(to, name, tier, licenseKey) {
     },
     body: JSON.stringify({
       from: 'wkalidev <onboarding@resend.dev>',
-      to,
+      to: process.env.TEST_EMAIL || to,
       subject: `Your multichain-mcp ${tier} license key`,
       html: `
         <h2>Welcome to multichain-mcp ${tier}!</h2>
