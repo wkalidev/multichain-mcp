@@ -14,13 +14,11 @@ Building an AI agent that interacts with Web3 today means writing separate integ
 
 ## Pricing
 
-| Tier | Price | Tools |
-|------|-------|-------|
-| **Free** | $0 | `get_balance`, `get_prices` |
-| **Pro** | $9/mo | + `get_portfolio`, `prepare_transfer` |
-| **Team** | $29/mo | + `deploy_token` |
-
-Get a license key at [wkalidev.lemonsqueezy.com](https://wkalidev.lemonsqueezy.com).
+| Tier | Price | Tools | |
+|------|-------|-------|-|
+| **Free** | $0 | `get_balance`, `get_prices` | |
+| **Pro** | $9/mo | + `get_portfolio`, `prepare_transfer` | [Get license →](https://wkalidev.lemonsqueezy.com/checkout/buy/a8988e17-64d3-46d4-be81-0b1bb7fef904) |
+| **Team** | $29/mo | + `deploy_token` | [Get license →](https://wkalidev.lemonsqueezy.com/checkout/buy/cc991ece-4bed-4edd-90a9-1e50adb37189) |
 
 ---
 
