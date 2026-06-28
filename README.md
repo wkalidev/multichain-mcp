@@ -12,15 +12,27 @@ Building an AI agent that interacts with Web3 today means writing separate integ
 
 ---
 
+## Pricing
+
+| Tier | Price | Tools |
+|------|-------|-------|
+| **Free** | $0 | `get_balance`, `get_prices` |
+| **Pro** | $9/mo | + `get_portfolio`, `prepare_transfer` |
+| **Team** | $29/mo | + `deploy_token` |
+
+Get a license key at [wkalidev.lemonsqueezy.com](https://wkalidev.lemonsqueezy.com).
+
+---
+
 ## Tools included
 
-| Tool | Description | Chains |
-|------|-------------|--------|
-| `get_balance` | Native + token balances for any wallet | Stacks, Celo, Base |
-| `get_portfolio` | Aggregate view across all 3 chains in one call | All |
-| `prepare_transfer` | Build unsigned tx for native or ERC-20/SIP-010 transfer | All |
-| `get_prices` | Live prices + 24h change (STX, CELO, ETH, USDC, WBTC…) | CoinGecko |
-| `deploy_token` | Prepare unsigned ERC-20 deployment tx | Celo, Base |
+| Tool | Description | Tier |
+|------|-------------|------|
+| `get_balance` | Native + token balances for any wallet | Free |
+| `get_prices` | Live prices + 24h change (STX, CELO, ETH, USDC, WBTC…) | Free |
+| `get_portfolio` | Aggregate view across all 3 chains in one call | Pro |
+| `prepare_transfer` | Build unsigned tx for native or ERC-20/SIP-010 transfer | Pro |
+| `deploy_token` | Prepare unsigned ERC-20 deployment tx on Celo or Base | Team |
 
 All write operations return **unsigned transactions** — your users always sign with their own wallet. Non-custodial by design.
 
@@ -43,13 +55,16 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "multichain": {
       "command": "npx",
-      "args": ["-y", "@wkalidev/multichain-mcp"]
+      "args": ["-y", "@wkalidev/multichain-mcp"],
+      "env": {
+        "MULTICHAIN_LICENSE_KEY": "your-license-key"
+      }
     }
   }
 }
 ```
 
-Restart Claude Desktop. Your AI can now read balances and prepare transactions across 3 chains.
+Omit the `env` block to run on the Free tier. Restart Claude Desktop after adding your key.
 
 ---
 
@@ -62,7 +77,10 @@ Add to `.cursor/mcp.json` or `.windsurf/mcp.json`:
   "mcpServers": {
     "multichain": {
       "command": "npx",
-      "args": ["-y", "@wkalidev/multichain-mcp"]
+      "args": ["-y", "@wkalidev/multichain-mcp"],
+      "env": {
+        "MULTICHAIN_LICENSE_KEY": "your-license-key"
+      }
     }
   }
 }
