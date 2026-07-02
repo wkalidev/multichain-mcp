@@ -2,6 +2,16 @@ const crypto = require('crypto');
 
 const MAX_BODY_BYTES = 1_000_000; // 1MB — Lemon Squeezy payloads are small; reject anything larger
 
+// Best-effort, single-instance protections. Vercel functions are stateless across cold
+// starts/instances, so these maps don't give distributed guarantees — they only protect
+// within a warm instance. A real distributed limiter would need Vercel KV/Upstash.
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 30;
+const rateLimitState = new Map(); // ip -> { count, resetAt }
+
+const DEDUPE_TTL_MS = 5 * 60_000;
+const seenPayloads = new Map(); // sha256(rawBody) -> expiresAt
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -9,6 +19,14 @@ module.exports = async function handler(req, res) {
   if (!secret) {
     console.error('Webhook misconfigured: LS_WEBHOOK_SECRET is not set');
     return res.status(500).json({ error: 'Server misconfigured' });
+  }
+
+  const ip = getClientIp(req);
+  if (!checkRateLimit(ip)) {
+    if (typeof res.setHeader === 'function') {
+      res.setHeader('Retry-After', String(Math.ceil(RATE_LIMIT_WINDOW_MS / 1000)));
+    }
+    return res.status(429).json({ error: 'Too many requests' });
   }
 
   let rawBody;
@@ -21,6 +39,10 @@ module.exports = async function handler(req, res) {
   const sig = req.headers['x-signature'];
   if (!sig || typeof sig !== 'string' || !isValidSignature(rawBody, sig, secret)) {
     return res.status(401).json({ error: 'Invalid signature' });
+  }
+
+  if (isReplay(rawBody)) {
+    return res.status(200).json({ ok: true, duplicate: true });
   }
 
   let payload;
@@ -52,13 +74,17 @@ module.exports = async function handler(req, res) {
       if (subOrderId) {
         const licenseKey = await getLicenseKeyForOrder(subOrderId);
         if (licenseKey) {
-          await lsPatch(`/license-keys/${licenseKey.id}`, {
-            data: {
-              type: 'license-keys',
-              id: String(licenseKey.id),
-              attributes: { disabled: true },
-            },
-          });
+          await setLicenseDisabled(licenseKey.id, true);
+        }
+      }
+    }
+
+    if (event === 'subscription_resumed' || event === 'subscription_unpaused') {
+      const subOrderId = attrs?.order_id;
+      if (subOrderId) {
+        const licenseKey = await getLicenseKeyForOrder(subOrderId);
+        if (licenseKey) {
+          await setLicenseDisabled(licenseKey.id, false);
         }
       }
     }
@@ -71,6 +97,50 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.config = { api: { bodyParser: false } };
+
+// Exposed for tests only.
+module.exports._internal = { rateLimitState, seenPayloads };
+
+function getClientIp(req) {
+  const fwd = req.headers['x-forwarded-for'];
+  if (typeof fwd === 'string' && fwd.length > 0) {
+    return fwd.split(',')[0].trim();
+  }
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  pruneExpired(rateLimitState, now);
+
+  const entry = rateLimitState.get(ip);
+  if (!entry || entry.resetAt <= now) {
+    rateLimitState.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count += 1;
+  return true;
+}
+
+function isReplay(rawBody) {
+  const now = Date.now();
+  pruneExpired(seenPayloads, now);
+
+  const hash = crypto.createHash('sha256').update(rawBody).digest('hex');
+  if (seenPayloads.has(hash)) return true;
+
+  seenPayloads.set(hash, now + DEDUPE_TTL_MS);
+  return false;
+}
+
+function pruneExpired(map, now) {
+  for (const [key, value] of map) {
+    const expiresAt = typeof value === 'number' ? value : value.resetAt;
+    if (expiresAt <= now) map.delete(key);
+  }
+}
 
 function readBody(req, maxBytes) {
   return new Promise((resolve, reject) => {
@@ -115,6 +185,16 @@ async function lsPatch(path, body) {
       'Content-Type': 'application/vnd.api+json',
     },
     body: JSON.stringify(body),
+  });
+}
+
+async function setLicenseDisabled(licenseKeyId, disabled) {
+  await lsPatch(`/license-keys/${licenseKeyId}`, {
+    data: {
+      type: 'license-keys',
+      id: String(licenseKeyId),
+      attributes: { disabled },
+    },
   });
 }
 

@@ -13,6 +13,7 @@
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
+    "test": "npm run build && node --test tests/**/*.test.js",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
