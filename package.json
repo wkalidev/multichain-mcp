@@ -1,6 +1,7 @@
 {
   "name": "@wkalidev/multichain-mcp",
-  "version": "1.2.0",
+  "mcpName": "io.github.wkalidev/multichain-mcp",
+  "version": "1.2.1",
   "description": "MCP server for AI agents — Stacks, Celo, Base in one package",
   "type": "module",
   "main": "./dist/index.js",
