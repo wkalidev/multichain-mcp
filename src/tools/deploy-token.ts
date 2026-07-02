@@ -12,10 +12,13 @@ const ERC20_BYTECODE =
 
 export const deployTokenSchema = z.object({
   chain: z.enum(["celo", "base"]).describe("EVM chain to deploy on"),
-  name: z.string().describe("Token name (e.g. 'My Token')"),
-  symbol: z.string().max(10).describe("Token symbol (e.g. 'MTK')"),
+  name: z.string().min(1).max(64).describe("Token name (e.g. 'My Token')"),
+  symbol: z.string().min(1).max(10).describe("Token symbol (e.g. 'MTK')"),
   decimals: z.number().int().min(0).max(18).default(18),
-  totalSupply: z.string().describe("Total supply (e.g. '1000000')"),
+  totalSupply: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "Total supply must be a positive number (e.g. '1000000')")
+    .describe("Total supply (e.g. '1000000')"),
   ownerAddress: z
     .string()
     .describe("Address that will receive the initial supply"),
