@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.wkalidev/multichain-mcp",
-  "description": "MCP server for AI agents — Stacks, Celo, and Base in one package. Free tier: balances and live prices. Pro: portfolio aggregation and unsigned transfers. Team: unsigned ERC-20 token deployment.",
+  "description": "MCP server for AI agents — Stacks, Celo, and Base in one npm package.",
   "title": "multichain-mcp",
   "repository": {
     "url": "https://github.com/wkalidev/multichain-mcp",
