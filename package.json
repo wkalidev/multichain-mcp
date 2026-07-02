@@ -15,6 +15,7 @@
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "npm run build && node --test tests/**/*.test.js",
+    "build:mcpb": "node scripts/build-mcpb.mjs",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -38,6 +39,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@types/node": "^22.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.8.0"
@@ -46,7 +48,8 @@
     "node": ">=22"
   },
   "overrides": {
-    "ws": "^8.21.0"
+    "ws": "^8.21.0",
+    "tmp": "^0.2.7"
   },
   "files": [
     "dist",
