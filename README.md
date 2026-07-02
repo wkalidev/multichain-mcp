@@ -17,8 +17,8 @@ Building an AI agent that interacts with Web3 today means writing separate integ
 | Tier | Price | Tools | |
 |------|-------|-------|-|
 | **Free** | $0 | `get_balance`, `get_prices` | |
-| **Pro** | $9/mo | + `get_portfolio`, `prepare_transfer` | [Lemon Squeezy →](https://wkalidev.lemonsqueezy.com/checkout/buy/a8988e17-64d3-46d4-be81-0b1bb7fef904) · [GitHub Sponsors →](https://github.com/sponsors/wkalidev) |
-| **Team** | $29/mo | + `deploy_token` | [Lemon Squeezy →](https://wkalidev.lemonsqueezy.com/checkout/buy/cc991ece-4bed-4edd-90a9-1e50adb37189) · [GitHub Sponsors →](https://github.com/sponsors/wkalidev) |
+| **Pro** | $9/mo | + `get_portfolio`, `prepare_transfer` | [Lemon Squeezy →](https://wkalidev.lemonsqueezy.com/checkout/buy/74e9f10d-3806-413c-881d-761319ee535b) · [GitHub Sponsors →](https://github.com/sponsors/wkalidev) |
+| **Team** | $29/mo | + `deploy_token` | [Lemon Squeezy →](https://wkalidev.lemonsqueezy.com/checkout/buy/00764bb0-5d36-4688-832c-f54b95df791f) · [GitHub Sponsors →](https://github.com/sponsors/wkalidev) |
 
 > **Launch offer:** Use code `LAUNCH30` for 30% off your first 3 months — limited to 50 users, expires July 28 2026.
 
