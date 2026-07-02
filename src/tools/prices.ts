@@ -16,8 +16,14 @@ const COINGECKO_IDS: Record<string, string> = {
 export const pricesSchema = z.object({
   symbols: z
     .array(z.string())
+    .min(1)
+    .max(50)
     .describe("Token symbols to fetch (e.g. ['STX', 'CELO', 'ETH'])"),
-  currency: z.string().default("usd").describe("Quote currency (default: usd)"),
+  currency: z
+    .string()
+    .regex(/^[a-zA-Z]{2,10}$/, "Currency must be a 2-10 letter code (e.g. usd, eur)")
+    .default("usd")
+    .describe("Quote currency (default: usd)"),
 });
 
 export type PricesInput = z.infer<typeof pricesSchema>;

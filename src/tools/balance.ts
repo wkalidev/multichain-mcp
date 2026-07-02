@@ -2,6 +2,12 @@ import { z } from "zod";
 import { isAddress, formatUnits } from "viem";
 import { getEvmClient, STACKS_API, type SupportedChain } from "../chains/config.js";
 
+const STACKS_ADDRESS_RE = /^S[PT][0-9A-HJKMNP-TV-Z]{38,39}$/;
+
+export function isStacksAddress(address: string): boolean {
+  return STACKS_ADDRESS_RE.test(address);
+}
+
 export const balanceSchema = z.object({
   address: z.string().describe("Wallet address (EVM 0x... or Stacks SP/ST...)"),
   chain: z.enum(["celo", "base", "stacks"]).describe("Target blockchain"),
@@ -31,6 +37,9 @@ export async function getBalance(input: BalanceInput): Promise<BalanceResult> {
   const { address, chain } = input;
 
   if (chain === "stacks") {
+    if (!isStacksAddress(address)) {
+      throw new Error(`Invalid Stacks address: ${address}`);
+    }
     return getStacksBalance(address);
   }
 
@@ -74,6 +83,9 @@ async function getStacksBalance(address: string): Promise<BalanceResult> {
   const fungibleRes = await fetch(
     `${STACKS_API}/extended/v1/address/${address}/balances`
   );
+  if (!fungibleRes.ok) {
+    throw new Error(`Stacks API error: ${fungibleRes.status}`);
+  }
   const fungibleData = (await fungibleRes.json()) as {
     fungible_tokens?: Record<
       string,

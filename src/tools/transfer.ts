@@ -7,12 +7,16 @@ import {
   type Hex,
 } from "viem";
 import { getEvmClient, STACKS_API } from "../chains/config.js";
+import { isStacksAddress } from "./balance.js";
 
 export const transferSchema = z.object({
   chain: z.enum(["celo", "base", "stacks"]),
   from: z.string().describe("Sender address"),
   to: z.string().describe("Recipient address"),
-  amount: z.string().describe("Amount as a string (e.g. '1.5')"),
+  amount: z
+    .string()
+    .regex(/^\d+(\.\d+)?$/, "Amount must be a positive number (e.g. '1.5')")
+    .describe("Amount as a string (e.g. '1.5')"),
   tokenAddress: z
     .string()
     .optional()
@@ -39,6 +43,9 @@ export async function prepareTransfer(
   const { chain, from, to, amount, tokenAddress } = input;
 
   if (chain === "stacks") {
+    if (!isStacksAddress(from) || !isStacksAddress(to)) {
+      throw new Error("Invalid Stacks address");
+    }
     return prepareStacksTransfer(from, to, amount, tokenAddress);
   }
 

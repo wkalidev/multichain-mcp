@@ -1,20 +1,25 @@
 const crypto = require('crypto');
 
+const MAX_BODY_BYTES = 1_000_000; // 1MB — Lemon Squeezy payloads are small; reject anything larger
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const rawBody = await new Promise((resolve, reject) => {
-    let body = '';
-    req.on('data', (chunk) => (body += chunk));
-    req.on('end', () => resolve(body));
-    req.on('error', reject);
-  });
-
   const secret = process.env.LS_WEBHOOK_SECRET;
-  const sig = req.headers['x-signature'];
-  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  if (!secret) {
+    console.error('Webhook misconfigured: LS_WEBHOOK_SECRET is not set');
+    return res.status(500).json({ error: 'Server misconfigured' });
+  }
 
-  if (expected !== sig) {
+  let rawBody;
+  try {
+    rawBody = await readBody(req, MAX_BODY_BYTES);
+  } catch (err) {
+    return res.status(413).json({ error: 'Payload too large' });
+  }
+
+  const sig = req.headers['x-signature'];
+  if (!sig || typeof sig !== 'string' || !isValidSignature(rawBody, sig, secret)) {
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
@@ -59,13 +64,39 @@ module.exports = async function handler(req, res) {
     }
   } catch (err) {
     console.error('Webhook handler error:', err);
-    return res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'Internal error' });
   }
 
   return res.status(200).json({ ok: true });
 };
 
 module.exports.config = { api: { bodyParser: false } };
+
+function readBody(req, maxBytes) {
+  return new Promise((resolve, reject) => {
+    let body = '';
+    let bytes = 0;
+    req.on('data', (chunk) => {
+      bytes += chunk.length;
+      if (bytes > maxBytes) {
+        reject(new Error('Payload too large'));
+        req.destroy();
+        return;
+      }
+      body += chunk;
+    });
+    req.on('end', () => resolve(body));
+    req.on('error', reject);
+  });
+}
+
+function isValidSignature(rawBody, sig, secret) {
+  const expected = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  const expectedBuf = Buffer.from(expected, 'hex');
+  const sigBuf = Buffer.from(sig, 'hex');
+  if (expectedBuf.length !== sigBuf.length) return false;
+  return crypto.timingSafeEqual(expectedBuf, sigBuf);
+}
 
 const LS_API = 'https://api.lemonsqueezy.com/v1';
 
@@ -87,9 +118,13 @@ async function lsPatch(path, body) {
   });
 }
 
-async function getLicenseKeyForOrder(orderId) {
-  const { data } = await lsGet(`/license-keys?filter[order_id]=${orderId}`);
-  return data?.[0] ?? null;
+async function getLicenseKeyForOrder(orderId, attempts = 3, delayMs = 1500) {
+  for (let i = 0; i < attempts; i++) {
+    const { data } = await lsGet(`/license-keys?filter[order_id]=${orderId}`);
+    if (data?.[0]) return data[0];
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, delayMs));
+  }
+  return null;
 }
 
 async function sendWelcomeEmail(to, name, tier, licenseKey) {
