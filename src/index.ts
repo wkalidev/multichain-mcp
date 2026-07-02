@@ -8,6 +8,7 @@ import { getPortfolio, portfolioSchema } from "./tools/portfolio.js";
 import { prepareTransfer, transferSchema } from "./tools/transfer.js";
 import { getPrices, pricesSchema } from "./tools/prices.js";
 import { prepareDeployToken, deployTokenSchema } from "./tools/deploy-token.js";
+import { registerUpgradeNudge } from "./tools/upgrade-nudge.js";
 import { resolveTier, tierLabel } from "./license.js";
 
 const server = new McpServer({
@@ -57,11 +58,15 @@ server.tool(
 async function main() {
   const tier = await resolveTier(process.env.MULTICHAIN_LICENSE_KEY);
 
+  const PORTFOLIO_DESC = "Aggregate wallet balances across Celo, Base, and Stacks in one call";
+  const TRANSFER_DESC = "Build an unsigned transaction to transfer native tokens or ERC-20/SIP-010 tokens on any supported chain";
+  const DEPLOY_DESC = "Prepare an unsigned ERC-20 token deployment transaction on Celo or Base";
+
   // Pro tier
   if (tier === "pro" || tier === "team") {
     server.tool(
       "get_portfolio",
-      "Aggregate wallet balances across Celo, Base, and Stacks in one call",
+      PORTFOLIO_DESC,
       portfolioSchema.shape,
       async (args) => {
         try {
@@ -82,7 +87,7 @@ async function main() {
 
     server.tool(
       "prepare_transfer",
-      "Build an unsigned transaction to transfer native tokens or ERC-20/SIP-010 tokens on any supported chain",
+      TRANSFER_DESC,
       transferSchema.shape,
       async (args) => {
         try {
@@ -100,13 +105,16 @@ async function main() {
         }
       }
     );
+  } else {
+    registerUpgradeNudge(server, "get_portfolio", PORTFOLIO_DESC, portfolioSchema.shape, "pro", tier);
+    registerUpgradeNudge(server, "prepare_transfer", TRANSFER_DESC, transferSchema.shape, "pro", tier);
   }
 
   // Team tier
   if (tier === "team") {
     server.tool(
       "deploy_token",
-      "Prepare an unsigned ERC-20 token deployment transaction on Celo or Base",
+      DEPLOY_DESC,
       deployTokenSchema.shape,
       async (args) => {
         try {
@@ -124,6 +132,8 @@ async function main() {
         }
       }
     );
+  } else {
+    registerUpgradeNudge(server, "deploy_token", DEPLOY_DESC, deployTokenSchema.shape, "team", tier);
   }
 
   const transport = new StdioServerTransport();
