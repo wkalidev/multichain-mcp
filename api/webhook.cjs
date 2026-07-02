@@ -220,7 +220,7 @@ async function sendWelcomeEmail(to, name, tier, licenseKey) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'wkalidev <onboarding@resend.dev>',
+      from: 'wkalidev <hello@wkalidev.com>',
       to: process.env.TEST_EMAIL || to,
       subject: `Your multichain-mcp ${tier} license key`,
       html: `
