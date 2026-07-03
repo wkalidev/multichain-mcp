@@ -5,8 +5,8 @@ import { tierLabel, type Tier } from "../license.js";
 export type LockedTier = "pro" | "team";
 
 export const CHECKOUT_URLS: Record<LockedTier, string> = {
-  pro: "https://wkalidev.lemonsqueezy.com/checkout/buy/74e9f10d-3806-413c-881d-761319ee535b",
-  team: "https://wkalidev.lemonsqueezy.com/checkout/buy/00764bb0-5d36-4688-832c-f54b95df791f",
+  pro: "https://wkalidev.com/checkout/buy/74e9f10d-3806-413c-881d-761319ee535b",
+  team: "https://wkalidev.com/checkout/buy/00764bb0-5d36-4688-832c-f54b95df791f",
 };
 
 export interface UpgradeNudge {
