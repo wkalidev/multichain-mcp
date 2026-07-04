@@ -1,5 +1,8 @@
 # @wkalidev/multichain-mcp
 
+[![multichain-mcp MCP server](https://glama.ai/mcp/servers/wkalidev/multichain-mcp/badges/card.svg)](https://glama.ai/mcp/servers/wkalidev/multichain-mcp)
+[![multichain-mcp MCP server](https://glama.ai/mcp/servers/wkalidev/multichain-mcp/badges/score.svg)](https://glama.ai/mcp/servers/wkalidev/multichain-mcp)
+
 **The only MCP server that gives AI agents native access to Stacks, Celo, and Base — from a single npm package.**
 
 Connect Claude Desktop, Cursor, or any MCP-compatible AI to 3 blockchains in under 5 minutes.
