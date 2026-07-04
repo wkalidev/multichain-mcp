@@ -107,6 +107,14 @@ test("deduplicates a replayed valid payload", async () => {
   assert.equal(res2.body.duplicate, true);
 });
 
+test("escapeHtml neutralizes markup in user-controlled fields", () => {
+  const { escapeHtml } = handler._internal;
+  assert.equal(
+    escapeHtml(`<img src=x onerror=alert(1)>&"'`),
+    "&lt;img src=x onerror=alert(1)&gt;&amp;&quot;&#39;"
+  );
+});
+
 test("rate limits a flood of requests from the same IP", async () => {
   const ip = "9.9.9.9";
   let lastStatus;

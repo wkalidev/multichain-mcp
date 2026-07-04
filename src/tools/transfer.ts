@@ -37,6 +37,9 @@ export interface UnsignedTx {
   description: string;
 }
 
+const STACKS_CONTRACT_ID_RE =
+  /^S[PT][0-9A-HJKMNP-TV-Z]{38,39}\.[a-zA-Z][a-zA-Z0-9-]{0,39}(::[a-zA-Z][a-zA-Z0-9-]*)?$/;
+
 export async function prepareTransfer(
   input: TransferInput
 ): Promise<UnsignedTx> {
@@ -46,11 +49,17 @@ export async function prepareTransfer(
     if (!isStacksAddress(from) || !isStacksAddress(to)) {
       throw new Error("Invalid Stacks address");
     }
+    if (tokenAddress && !STACKS_CONTRACT_ID_RE.test(tokenAddress)) {
+      throw new Error(`Invalid SIP-010 contract ID: ${tokenAddress}`);
+    }
     return prepareStacksTransfer(from, to, amount, tokenAddress);
   }
 
   if (!isAddress(from) || !isAddress(to)) {
     throw new Error("Invalid EVM address");
+  }
+  if (tokenAddress && !isAddress(tokenAddress)) {
+    throw new Error(`Invalid token address: ${tokenAddress}`);
   }
 
   return prepareEvmTransfer(

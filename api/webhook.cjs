@@ -99,7 +99,7 @@ module.exports = async function handler(req, res) {
 module.exports.config = { api: { bodyParser: false } };
 
 // Exposed for tests only.
-module.exports._internal = { rateLimitState, seenPayloads };
+module.exports._internal = { rateLimitState, seenPayloads, escapeHtml };
 
 function getClientIp(req) {
   const fwd = req.headers['x-forwarded-for'];
@@ -207,11 +207,23 @@ async function getLicenseKeyForOrder(orderId, attempts = 3, delayMs = 1500) {
   return null;
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 async function sendWelcomeEmail(to, name, tier, licenseKey) {
   const tools = {
     Pro: '<code>get_portfolio</code> and <code>prepare_transfer</code>',
     Team: 'all 5 tools including <code>deploy_token</code>',
   };
+
+  const safeName = escapeHtml(name || 'there');
+  const safeLicenseKey = escapeHtml(licenseKey);
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -225,10 +237,10 @@ async function sendWelcomeEmail(to, name, tier, licenseKey) {
       subject: `Your multichain-mcp ${tier} license key`,
       html: `
         <h2>Welcome to multichain-mcp ${tier}!</h2>
-        <p>Hi ${name || 'there'},</p>
+        <p>Hi ${safeName},</p>
         <p>Your license key:</p>
         <p style="font-size:18px;font-family:monospace;background:#f4f4f4;padding:12px;border-radius:6px;">
-          <strong>${licenseKey}</strong>
+          <strong>${safeLicenseKey}</strong>
         </p>
         <p>This unlocks ${tools[tier] || 'your tier tools'}.</p>
         <h3>Setup (Claude Desktop)</h3>
@@ -238,7 +250,7 @@ async function sendWelcomeEmail(to, name, tier, licenseKey) {
       "command": "npx",
       "args": ["-y", "@wkalidev/multichain-mcp"],
       "env": {
-        "MULTICHAIN_LICENSE_KEY": "${licenseKey}"
+        "MULTICHAIN_LICENSE_KEY": "${safeLicenseKey}"
       }
     }
   }

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import { balanceSchema, isStacksAddress } from "../dist/tools/balance.js";
-import { transferSchema } from "../dist/tools/transfer.js";
+import { transferSchema, prepareTransfer } from "../dist/tools/transfer.js";
 import { pricesSchema } from "../dist/tools/prices.js";
 import { deployTokenSchema } from "../dist/tools/deploy-token.js";
 
@@ -32,6 +32,33 @@ test("transferSchema rejects negative/garbage amounts, accepts valid ones", () =
   assert.equal(transferSchema.safeParse({ ...base, amount: "abc" }).success, false);
   assert.equal(transferSchema.safeParse({ ...base, amount: "1.5" }).success, true);
   assert.equal(transferSchema.safeParse({ ...base, amount: "0" }).success, true);
+});
+
+test("prepareTransfer rejects a malformed EVM tokenAddress before touching the network", async () => {
+  const validEvmAddr = "0x" + "0".repeat(40);
+  await assert.rejects(
+    prepareTransfer({
+      chain: "base",
+      from: validEvmAddr,
+      to: validEvmAddr,
+      amount: "1",
+      tokenAddress: "not-an-address",
+    }),
+    /Invalid token address/
+  );
+});
+
+test("prepareTransfer rejects a malformed Stacks SIP-010 contract ID", async () => {
+  await assert.rejects(
+    prepareTransfer({
+      chain: "stacks",
+      from: STACKS_ADDR,
+      to: STACKS_ADDR,
+      amount: "1",
+      tokenAddress: "not-a-contract-id",
+    }),
+    /Invalid SIP-010 contract ID/
+  );
 });
 
 test("pricesSchema blocks query-string injection via currency", () => {
