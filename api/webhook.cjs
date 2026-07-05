@@ -232,7 +232,7 @@ async function sendWelcomeEmail(to, name, tier, licenseKey) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'wkalidev <hello@wkalidev.com>',
+      from: 'wkalidev <license@wkalidev.com>',
       to: process.env.TEST_EMAIL || to,
       subject: `Your multichain-mcp ${tier} license key`,
       html: `
@@ -256,7 +256,7 @@ async function sendWelcomeEmail(to, name, tier, licenseKey) {
   }
 }</pre>
         <p>Restart Claude Desktop or Cursor after adding the key.</p>
-        <p>Questions? Reply to this email.</p>
+        <p>Questions? Contact support@wkalidev.com.</p>
         <p>— wkalidev</p>
       `,
     }),
