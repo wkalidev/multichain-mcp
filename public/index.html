@@ -391,22 +391,6 @@
     .features li { font-size: 0.875rem; display: flex; align-items: center; gap: 0.6rem; }
     .features li::before { content: '✓'; color: var(--green); font-weight: 700; }
 
-    .promo-banner {
-      margin-top: 2.5rem; text-align: center;
-      background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(59,130,246,0.06));
-      border: 1px solid rgba(99,102,241,0.3);
-      border-radius: 12px; padding: 1.15rem;
-      font-size: 0.875rem;
-    }
-
-    .promo-code {
-      font-family: var(--mono-font); font-weight: 700; color: var(--orange);
-      background: rgba(249,115,22,0.12); padding: 0.2rem 0.55rem;
-      border-radius: 5px;
-    }
-
-    #promo-days { color: var(--muted); }
-
     /* FOOTER */
     footer {
       border-top: 1px solid var(--border);
@@ -697,10 +681,6 @@
         <a href="https://wkalidev.com/checkout/buy/00764bb0-5d36-4688-832c-f54b95df791f" class="btn btn-ghost" style="width:100%; justify-content:center;">Get Team →</a>
       </div>
     </div>
-
-    <div class="promo-banner reveal" style="--i:3">
-      Launch offer — use code <span class="promo-code">LAUNCH30</span> for 30% off your first 3 months. Limited to 50 users, expires July 28 2026. <span id="promo-days"></span>
-    </div>
   </div>
 </section>
 
@@ -786,14 +766,6 @@
       card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) translateZ(0)';
     });
   });
-
-  // ---------- honest countdown for the launch promo (real date from the copy above) ----------
-  const daysEl = document.getElementById('promo-days');
-  const msLeft = new Date('2026-07-28T23:59:59Z') - new Date();
-  if (msLeft > 0) {
-    const days = Math.ceil(msLeft / 86400000);
-    daysEl.textContent = `(~${days} day${days === 1 ? '' : 's'} left)`;
-  }
 
   // ---------- 3D hero scene ----------
   // Skipped on narrow viewports: the orbit radii are tuned for wide aspect ratios, and on
